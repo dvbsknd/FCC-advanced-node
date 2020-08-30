@@ -13,7 +13,8 @@ app.set('views', './views/pug'); // Will actually default here anyway
 app.set('view engine', 'pug'); // Import/require not required
 
 app.route("/").get((req, res) => {
-  res.render('index');
+  const data = {title: 'Hello', message: 'Please login'};
+  res.render('index', data);
 });
 
 app.listen(process.env.PORT || 3000, () => {
