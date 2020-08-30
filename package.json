@@ -1,11 +1,8 @@
 {
-  "//1": "describes your app and its dependencies",
-  "//2": "https://docs.npmjs.com/files/package.json",
-  "//3": "updating this file will download and update your packages",
   "name": "fcc-advanced-node-and-express",
-  "author": "http://github.com/JosephLivengood",
-  "version": "0.0.1",
-  "description": "What am I about?",
+  "author": "@dvbsknd",
+  "version": "0.0.2",
+  "description": "Repository of freeCodeCamp challanges for Node and Express",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -19,11 +16,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://glitch.com/#!/project/welcome-project"
+    "url": "https://github.com/dvbsknd/FCC-advanced-node.git"
   },
   "keywords": [
     "node",
-    "glitch",
+    "freeCodeCamp",
     "express",
     "pug",
     "passport",
