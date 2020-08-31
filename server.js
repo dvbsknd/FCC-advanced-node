@@ -13,7 +13,7 @@ const sessOptions = {
 
 const app = express();
 if (app.get('env') === 'production') {
-  sess.cookie.secure = true; // serve secure cookies
+  sessOptions.cookie.secure = true; // serve secure cookies
 }
 
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
