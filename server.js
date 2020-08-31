@@ -1,11 +1,27 @@
 "use strict";
 
 const express = require("express");
-const fccTesting = require("./freeCodeCamp/fcctesting.js");
+const passport = require('passport');
+
+const session = require('express-session');
+const sessOptions = {
+  secret: process.env.SESSION_SECRET,
+  resave: true,
+  saveUninitialized: true,
+  cookie: {},
+}
 
 const app = express();
+if (app.get('env') === 'production') {
+  sess.cookie.secure = true; // serve secure cookies
+}
+
+const fccTesting = require("./freeCodeCamp/fcctesting.js");
 
 fccTesting(app); //For FCC testing purposes
+app.use(session(sessOptions));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use("/public", express.static(process.cwd() + "/public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
