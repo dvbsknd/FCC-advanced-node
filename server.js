@@ -28,6 +28,21 @@ app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// User de/serialisation
+passport.serializeUser((user, done) => {
+  console.log(req);
+  done(null, user._id);
+});
+passport.deserializeUser((id, done) => {
+  console.log(req);
+  // db.collection('users').findOne(
+  //   {_id: new ObjectID(id)},
+  //     (err, doc) => {
+         done(null, null);
+  //     }
+  // );
+});
+
 app.route("/").get((req, res) => {
   const data = {title: 'Hello', message: 'Please login'};
   res.render('index', data);
