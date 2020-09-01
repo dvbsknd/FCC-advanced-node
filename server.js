@@ -3,7 +3,8 @@
 const express = require("express");
 const passport = require('passport');
 const session = require('express-session');
-const db = require('mongodb');
+const mongo = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
 
 const app = express();
@@ -29,27 +30,36 @@ app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// User de/serialisation
-const ObjectID = db.ObjectID;
-passport.serializeUser((user, done) => {
-  console.log(req);
-  done(null, user._id);
-});
-passport.deserializeUser((id, done) => {
-  console.log(req);
-  db.collection('users').findOne(
-    {_id: new ObjectID(id)},
-      (err, doc) => {
-         done(null, null);
-      }
-  );
-});
 
 app.route("/").get((req, res) => {
   const data = {title: 'Hello', message: 'Please login'};
   res.render('index', data);
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Listening on port " + process.env.PORT);
+mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, db) => {
+  if (err) console.error(`Database error: ${err}`);
+  else {
+
+    // User de/serialisation
+    passport.serializeUser((user, done) => {
+      console.log('Serialising', user);
+      done(null, user._id);
+    });
+
+    passport.deserializeUser((id, done) => {
+      console.log('Deserialising', id);
+      db.collection('users').findOne(
+        {_id: new ObjectID(id)},
+        (err, doc) => {
+          done(null, doc);
+        }
+      );
+    });
+
+    // Start listening
+    app.listen(process.env.PORT || 3000, () => {
+      console.log("Listening on port", process.env.PORT, 'with database', db.s.options.dbName);
+    });
+
+  }
 });
