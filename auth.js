@@ -41,7 +41,7 @@ passport.deserializeUser((id, done) => {
   );
 });
 
-module.exports = (app) => {
+module.exports.configure = (app) => {
 
   // If prod serve secure cookies
   if (app.get('env') === 'production') {
@@ -54,3 +54,5 @@ module.exports = (app) => {
   app.use(passport.session());
 
 };
+
+module.exports.authenticate = passport.authenticate('local', { failureRedirect: '/' });
