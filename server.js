@@ -1,12 +1,9 @@
 "use strict";
 
 const express = require("express");
-const passport = require('passport');
-const session = require('express-session');
-const LocalStrategy = require('passport-local');
 const mongo = require('mongodb').MongoClient;
-const ObjectID = require('mongodb').ObjectID;
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
+const auth = require("./auth.js");
 
 const app = express();
 
@@ -17,21 +14,6 @@ app.use(express.urlencoded({ extended: true }));
 app.set('views', './views/pug'); // Will actually default here anyway
 app.set('view engine', 'pug'); // Import/require not required
 
-// Auth
-const sessOptions = {
-  secret: process.env.SESSION_SECRET,
-  resave: true,
-  saveUninitialized: true,
-  cookie: {},
-}
-if (app.get('env') === 'production') {
-  sessOptions.cookie.secure = true; // serve secure cookies
-}
-app.use(session(sessOptions));
-app.use(passport.initialize());
-app.use(passport.session());
-
-
 app.route("/").get((req, res) => {
   const data = {title: 'Hello', message: 'Please login'};
   res.render('index', data);
@@ -41,35 +23,8 @@ mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, db) => 
   if (err) console.error('Database error:', err);
   else {
 
-    // Set auth strategy
-    passport.use(new LocalStrategy((username, password, done) => {
-      db.collection('users').findOne(
-        { username },
-        (err, user) => {
-          console.log('Log-in attempt for', username);
-          if (err) done(err);
-          if (!user) done(null, false);
-          if (password !== user.password) done(null, false);
-          return done(null, user);
-        }
-      );
-    }));
-
-    // User de/serialisation
-    passport.serializeUser((user, done) => {
-      console.log('Serialising', user);
-      done(null, user._id);
-    });
-
-    passport.deserializeUser((id, done) => {
-      console.log('Deserialising', id);
-      db.collection('users').findOne(
-        {_id: new ObjectID(id)},
-        (err, doc) => {
-          done(null, doc);
-        }
-      );
-    });
+    // Implement authentication
+    auth(app);
 
     // Start listening
     app.listen(process.env.PORT || 3000, () => {
