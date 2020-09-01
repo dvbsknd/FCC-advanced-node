@@ -3,6 +3,7 @@
 const express = require("express");
 const passport = require('passport');
 const session = require('express-session');
+const LocalStrategy = require('passport-local');
 const mongo = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
@@ -37,8 +38,22 @@ app.route("/").get((req, res) => {
 });
 
 mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, db) => {
-  if (err) console.error(`Database error: ${err}`);
+  if (err) console.error('Database error:', err);
   else {
+
+    // Set auth strategy
+    passport.use(new LocalStrategy((username, password, done) => {
+      db.collection('users').findOne(
+        { username },
+        (err, user) => {
+          console.log('Log-in attempt for', username);
+          if (err) done(err);
+          if (!user) done(null, false);
+          if (password !== user.password) done(null, false);
+          return done(null, user);
+        }
+      );
+    }));
 
     // User de/serialisation
     passport.serializeUser((user, done) => {
