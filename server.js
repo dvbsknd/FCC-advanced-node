@@ -1,10 +1,8 @@
 "use strict";
 
 const express = require("express");
-const mongo = require('mongodb').MongoClient;
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
 const auth = require("./auth.js");
-const LocalStrategy = require('passport-local');
 
 const app = express();
 
@@ -24,20 +22,6 @@ mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, db) => 
   if (err) console.error('Database error:', err);
   else {
 
-    // Set auth strategy
-    const passport = require('passport');
-    passport.use(new LocalStrategy((username, password, done) => {
-      db.collection('users').findOne(
-        { username },
-        (err, user) => {
-          console.log('Log-in attempt for', username);
-          if (err) done(err);
-          if (!user) done(null, false);
-          if (password !== user.password) done(null, false);
-          return done(null, user);
-        }
-      );
-    }));
     // Implement authentication
     auth(app);
 
