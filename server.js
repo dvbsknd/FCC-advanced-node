@@ -3,7 +3,7 @@
 const express = require("express");
 const mongo = require('mongodb').MongoClient;
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
-const auth = require("./auth.js");
+const authentication = require("./auth.js");
 
 const app = express();
 
@@ -13,6 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('views', './views/pug'); // Will actually default here anyway
 app.set('view engine', 'pug'); // Import/require not required
+app.use(authentication.middleware);
 
 app.route("/").get((req, res) => {
   const data = {
@@ -23,12 +24,15 @@ app.route("/").get((req, res) => {
   res.render('index', data);
 });
 
+app.post('/login', authentication.authenticate, (req, res) => {
+  console.log(req.user ? `${req.user._id} logged in` : `Login failed: ${req.body}`);
+  res.json({ authenticated: true });
+});
+
 mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, client) => {
   const db = client.db();
   if (err) console.error('Database error:', err);
   else {
-    // Implement authentication
-    auth.configure(app, db);
     // Start listening
     app.listen(process.env.PORT || 3000, () => {
       console.log("Listening on port", process.env.PORT, 'with database', db.databaseName);
