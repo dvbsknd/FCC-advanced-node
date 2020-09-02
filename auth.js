@@ -29,7 +29,7 @@ module.exports.configure = (app, db) => {
       { username: username },
       (err, user) => {
         if (err) {
-          done(err);
+          return done(err);
         }
         if (!user) return done(null, false);
         if (password !== user.password) {
@@ -56,6 +56,9 @@ module.exports.configure = (app, db) => {
     );
   });
 
-};
+  app.post('/login', passport.authenticate('local', { failureRedirect: '/?authorised=false' }), (req, res) => {
+    console.log(req.user ? `${req.user._id} logged in` : `Login failed: ${req.body}`);
+    res.json({ authenticated: true });
+  });
 
-module.exports.authenticate = passport.authenticate('local', { failureRedirect: '/ddd' });
+};

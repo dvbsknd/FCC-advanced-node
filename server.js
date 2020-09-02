@@ -23,11 +23,6 @@ app.route("/").get((req, res) => {
   res.render('index', data);
 });
 
-app.post('/login', auth.authenticate, (req, res) => {
-  console.log(req.user ? `${req.user} logged in` : `Login failed: ${req.body}`);
-  res.json({ authenticated: true });
-});
-
 mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, client) => {
   const db = client.db();
   if (err) console.error('Database error:', err);
