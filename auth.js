@@ -70,4 +70,4 @@ module.exports.middleware = [
   passport.initialize()
 ];
 
-module.exports.authenticate = passport.authenticate('local', { failureRedirect: '/?authorised=false' });
+module.exports.authenticate = passport.authenticate('local', { successRedirect: '/profile', failureRedirect: '/?authorised=false' });

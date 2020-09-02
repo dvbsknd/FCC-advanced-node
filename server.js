@@ -139,8 +139,12 @@ app.route("/").get((req, res) => {
   res.render('index', data);
 });
 
+app.route("/profile").get((req, res) => {
+  res.render('profile');
+});
+
 // app.post('/login', authentication.authenticate, (req, res) => {
-app.post('/login', passport.authenticate('local', { failureRedirect: '/?authorised=false' }), (req, res) => {
+app.post('/login', passport.authenticate('local', { successRedirect: '/profile', failureRedirect: '/?authorised=false' }), (req, res) => {
   console.log(req.user ? `${req.user._id} logged in` : `Login failed: ${req.body}`);
   res.json({ authenticated: true });
 });
