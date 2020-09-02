@@ -24,17 +24,19 @@ app.route("/").get((req, res) => {
 });
 
 app.post('/login', auth.authenticate, (req, res) => {
+  console.log(req.user ? `${req.user} logged in` : `Login failed: ${req.body}`);
   res.json({ authenticated: true });
 });
 
-mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, db) => {
+mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, client) => {
+  const db = client.db();
   if (err) console.error('Database error:', err);
   else {
     // Implement authentication
-    auth.configure(app);
+    auth.configure(app, db);
     // Start listening
     app.listen(process.env.PORT || 3000, () => {
-      console.log("Listening on port", process.env.PORT, 'with database', db.s.options.dbName);
+      console.log("Listening on port", process.env.PORT, 'with database', db.databaseName);
     });
   }
 });
