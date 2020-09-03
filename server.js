@@ -61,7 +61,7 @@ passport.deserializeUser((id, done) => {
 
 // Define auth strategy
 passport.use(new LocalStrategy((username, password, done) => {
-  console.log('Log-in attempt for', username);
+  console.log(`User ${username} attempted to log in.`);
   const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
   client.connect(err => {
     if (err) return console.error(err);
@@ -74,7 +74,7 @@ passport.use(new LocalStrategy((username, password, done) => {
         }
         if (!user) return done(null, false);
         if (password !== user.password) {
-          console.log('Log-in failure for', username, '(incorrect password)');
+          console.log('Log-in failure for \x1b[32m%s\x1b[0m', username);
           return done(null, false);
         };
         return done(null, user);
@@ -84,7 +84,7 @@ passport.use(new LocalStrategy((username, password, done) => {
 }));
 
 const ensureAuthenticated = (req, res, next) => {
-  console.log('Authenticating with session:', req.session);
+  console.log('Authenticating with session for \x1b[32m%s\x1b[0m', req.session.passport.user);
   if (req.isAuthenticated()) {
     console.log(`${req.user._id} logged in`);
     next();
@@ -111,7 +111,7 @@ app.get('/profile', ensureAuthenticated, (req, res) => {
 });
 
 app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), (req, res) => { 
-  console.log('Auth successful, user:', req.user);
+  console.log('Auth successful for \x1b[32m%s\x1b[0m', req.user.username);
   res.redirect('/profile');
 });
 
