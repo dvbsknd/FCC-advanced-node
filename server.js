@@ -3,7 +3,10 @@
 const express = require("express");
 const mongo = require('mongodb').MongoClient;
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
-// const authentication = require("./auth.js");
+const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const { MongoClient, ObjectID } = require('mongodb');
 
 const app = express();
 
@@ -13,18 +16,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('views', './views/pug'); // Will actually default here anyway
 app.set('view engine', 'pug'); // Import/require not required
-// app.use(authentication.middleware);
-
-// Temporarily pulling auth into Server.js to pass FCC tests:
-const session = require('express-session');
-const passport = require('passport');
-const LocalStrategy = require('passport-local');
-const { MongoClient, ObjectID } = require('mongodb');
 
 // Sessions
 const sessOptions = {
   secret: process.env.SESSION_SECRET,
-  name: 'advanced-node',
+  // name: 'advanced-node',
   resave: true,
   saveUninitialized: true,
   cookie: {},
@@ -33,102 +29,73 @@ const sessOptions = {
 const secureCookie = (req, res, next) => {
   if (process.env.NODE_ENV === 'production') {
     sessOptions.cookie.secure = true;
-  }
+  } else {
+    sessOptions.cookie.secure = false;
+  };
   next();
 }
 
-// Define auth strategy
-passport.use(new LocalStrategy((username, password, done) => {
-  console.log('Log-in attempt for', username);
-  const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
-  client.connect(err => {
-    if (err) return console.error(err);
-    const db = client.db();
-    db.collection('users').findOne(
-      { username: username },
-      (err, user) => {
-        if (err) {
-          return done(err);
-        }
-        if (!user) return done(null, false);
-        if (password !== user.password) {
-          console.log('Log-in failure for', username, '(incorrect password)');
-          return done(null, false);
-        };
-        return done(null, user);
-      }
-    );
-  });
-}));
-
-// User de/serialisation
-passport.serializeUser((user, done) => {
-  console.log('Serialising', user);
-  done(null, user._id);
-});
-
-passport.deserializeUser((id, done) => {
-  console.log('Deserialising', id);
-  const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
-  client.connect(err => {
-    if (err) return console.error(err);
-    const db = client.db();
-    db.collection('users').findOne(
-      {_id: new ObjectID(id)},
-      (err, doc) => {
-        done(null, doc);
-      }
-    );
-  });
-});
-// Define auth strategy
-passport.use(new LocalStrategy((username, password, done) => {
-  console.log('Log-in attempt for', username);
-  const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
-  client.connect(err => {
-    if (err) return console.error(err);
-    const db = client.db();
-    db.collection('users').findOne(
-      { username: username },
-      (err, user) => {
-        if (err) {
-          return done(err);
-        }
-        if (!user) return done(null, false);
-        if (password !== user.password) {
-          console.log('Log-in failure for', username, '(incorrect password)');
-          return done(null, false);
-        };
-        return done(null, user);
-      }
-    );
-  });
-}));
-
-// User de/serialisation
-passport.serializeUser((user, done) => {
-  console.log('Serialising', user);
-  done(null, user._id);
-});
-
-passport.deserializeUser((id, done) => {
-  console.log('Deserialising', id);
-  const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
-  client.connect(err => {
-    if (err) return console.error(err);
-    const db = client.db();
-    db.collection('users').findOne(
-      {_id: new ObjectID(id)},
-      (err, doc) => {
-        done(null, doc);
-      }
-    );
-  });
-});
 app.use(secureCookie);
 app.use(session(sessOptions));
+
+// User de/serialisation
+passport.serializeUser((user, done) => {
+  console.log('Serialised', user._id);
+  done(null, user._id);
+});
+
+passport.deserializeUser((id, done) => {
+  console.log('Deserialised', id);
+  const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
+  client.connect(err => {
+    if (err) return console.error(err);
+    const db = client.db();
+    db.collection('users').findOne(
+      {_id: new ObjectID(id)},
+      (err, doc) => {
+        done(null, doc);
+      }
+    );
+  });
+});
+
+// Define auth strategy
+passport.use(new LocalStrategy((username, password, done) => {
+  console.log('Log-in attempt for', username);
+  const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
+  client.connect(err => {
+    if (err) return console.error(err);
+    const db = client.db();
+    db.collection('users').findOne(
+      { username: username },
+      (err, user) => {
+        if (err) {
+          return done(err);
+        }
+        if (!user) return done(null, false);
+        if (password !== user.password) {
+          console.log('Log-in failure for', username, '(incorrect password)');
+          return done(null, false);
+        };
+        return done(null, user);
+      }
+    );
+  });
+}));
+
+const ensureAuthenticated = (req, res, next) => {
+  console.log('Authenticating with session:', req.session);
+  if (req.isAuthenticated()) {
+    console.log(`${req.user._id} logged in`);
+    next();
+  } else {
+    console.log(`Not authorised`);
+    res.redirect('/');
+  }
+}
+
 app.use(passport.initialize());
-// End temp.
+app.use(passport.session());
 
 app.route("/").get((req, res) => {
   const data = {
@@ -139,14 +106,13 @@ app.route("/").get((req, res) => {
   res.render('index', data);
 });
 
-app.route("/profile").get((req, res) => {
+app.get('/profile', ensureAuthenticated, (req, res) => {
   res.render('profile');
 });
 
-// app.post('/login', authentication.authenticate, (req, res) => {
-app.post('/login', passport.authenticate('local', { successRedirect: '/profile', failureRedirect: '/?authorised=false' }), (req, res) => {
-  console.log(req.user ? `${req.user._id} logged in` : `Login failed: ${req.body}`);
-  res.json({ authenticated: true });
+app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), (req, res) => { 
+  console.log('Auth successful, user:', req.user);
+  res.redirect('/profile');
 });
 
 mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, client) => {
