@@ -106,7 +106,10 @@ app.route("/").get((req, res) => {
 });
 
 app.route('/profile').get(ensureAuthenticated, (req, res) => {
-  res.render('profile');
+  const data = {
+    username: req.user.username
+  };
+  res.render('profile', data);
 });
 
 app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), (req, res) => { 
