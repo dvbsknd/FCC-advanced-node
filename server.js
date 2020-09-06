@@ -98,7 +98,7 @@ app.use(passport.session());
 
 app.route("/").get((req, res) => {
   const data = {
-    title: 'Hello',
+    title: 'Home Page',
     message: 'Please login',
     showLogin: true
   };
