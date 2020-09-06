@@ -117,6 +117,17 @@ app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), (re
   res.redirect('/profile');
 });
 
+app.route('/logout').get((req, res) => {
+  req.logout();
+  req.redirect('/');
+});
+
+app.use((req, res, next) => {
+  res.status(404)
+    .type('text')
+    .send('Not Found');
+});
+
 mongo.connect(process.env.MONGO_URI, { useUnifiedTopology: true }, (err, client) => {
   const db = client.db();
   if (err) console.error('Database error:', err);
