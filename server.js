@@ -85,10 +85,10 @@ passport.use(new LocalStrategy((username, password, done) => {
 
 const ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
-    console.log('\x1b[33m%s\x1b[0m logged in', req.user._id);
+    console.log('\x1b[33m%s\x1b[0m logged in, serving request', req.user._id);
     next();
   } else {
-    console.log('Not authorised for \x1b[33m%s\x1b[0m', req.path);
+    console.log('Not authorised for \x1b[33m%s\x1b[0m, redirecting', req.path);
     res.redirect('/');
   }
 }
