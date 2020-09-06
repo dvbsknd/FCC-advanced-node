@@ -20,7 +20,7 @@ app.set('view engine', 'pug'); // Import/require not required
 // Sessions
 const sessOptions = {
   secret: process.env.SESSION_SECRET,
-  // name: 'advanced-node',
+  name: 'advanced-node',
   resave: true,
   saveUninitialized: true,
   cookie: {},
