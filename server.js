@@ -119,7 +119,7 @@ app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), (re
 
 app.route('/logout').get((req, res) => {
   req.logout();
-  req.redirect('/');
+  res.redirect('/');
 });
 
 app.use((req, res, next) => {
