@@ -105,7 +105,7 @@ app.route("/").get((req, res) => {
   res.render('index', data);
 });
 
-app.get('/profile', ensureAuthenticated, (req, res) => {
+app.route('/profile').get(ensureAuthenticated, (req, res) => {
   res.render('profile');
 });
 
