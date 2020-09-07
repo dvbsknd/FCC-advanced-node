@@ -20,22 +20,17 @@ app.set('view engine', 'pug'); // Import/require not required
 // Sessions
 const sessOptions = {
   secret: process.env.SESSION_SECRET,
-  // name: 'advanced-node',
+  name: process.env.NODE_ENV,
   resave: true,
   saveUninitialized: true,
-  cookie: {},
-}
-// If prod serve secure cookies
-const secureCookie = (req, res, next) => {
-  if (process.env.NODE_ENV === 'REPL') {
-    sessOptions.cookie.secure = true;
-  } else {
-    sessOptions.cookie.secure = false;
-  };
-  next();
+  proxy: true,
+  cookie: {
+    httpOnly: false,
+    secure: !process.env.NODE_ENV === 'REPL'
+  }
 }
 
-app.use(secureCookie);
+app.set('trust proxy', 1) // trust first proxy
 app.use(session(sessOptions));
 
 // User de/serialisation
