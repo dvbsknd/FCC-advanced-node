@@ -27,7 +27,7 @@ const sessOptions = {
 }
 // If prod serve secure cookies
 const secureCookie = (req, res, next) => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'REPL') {
     sessOptions.cookie.secure = true;
   } else {
     sessOptions.cookie.secure = false;
