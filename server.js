@@ -124,7 +124,7 @@ app.route('/register').post(
         { username: req.body.username },
         (err, user) => {
           if (err) { next(err) }
-          else if (user) { res.redirect('/'); }
+          else if (user) { res.redirect('/profile'); }
           else {
             db.collection('users').insertOne(
               { username: req.body.username, password: req.body.password },
