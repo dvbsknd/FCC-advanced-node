@@ -83,30 +83,6 @@ passport.use(new LocalStrategy((username, password, done) => {
   });
 }));
 
-const registerUser = (req, res, next) => {
-  const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
-  client.connect(err => {
-    if (err) return console.error(err);
-    const db = client.db();
-    db.collection('users').findOne(
-      { username: req.body.username },
-      (err, user) => {
-        if (err) { next(err) }
-        else if (user) { res.redirect('/'); }
-        else {
-          db.collection('users').insertOne(
-            { username: req.body.username, password: req.body.password },
-            (err, doc) => {
-              console.log('Adding user \x1b[33m%s\x1b[0m', req.body.username);
-              if (err) { res.redirect('/'); }
-              else { next(null, user); }
-            }
-          );
-        };
-      });
-  });
-}
-
 const ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
     console.log('\x1b[33m%s\x1b[0m logged in, serving request', req.user._id);
@@ -137,8 +113,30 @@ app.route('/profile').get(ensureAuthenticated, (req, res) => {
   res.render('profile', data);
 });
 
-app.post('/register',
-  registerUser,
+app.route('/register').post(
+  (req, res, next) => {
+    const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
+    client.connect(err => {
+      if (err) return console.error(err);
+      const db = client.db();
+      db.collection('users').findOne(
+        { username: req.body.username },
+        (err, user) => {
+          if (err) { next(err) }
+          else if (user) { res.redirect('/'); }
+          else {
+            db.collection('users').insertOne(
+              { username: req.body.username, password: req.body.password },
+              (err, doc) => {
+                console.log('Adding user \x1b[33m%s\x1b[0m', req.body.username);
+                if (err) { res.redirect('/'); }
+                else { next(null, user); }
+              }
+            );
+          };
+        });
+    });
+  },
   passport.authenticate('local', { failureRedirect: '/' }),
   (req, res) => {
     console.log('Registration successful for \x1b[33m%s\x1b[0m', req.user.username);
