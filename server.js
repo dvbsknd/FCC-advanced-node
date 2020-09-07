@@ -20,7 +20,7 @@ app.set('view engine', 'pug'); // Import/require not required
 // Sessions
 const sessOptions = {
   secret: process.env.SESSION_SECRET,
-  name: 'advanced-node',
+  // name: 'advanced-node',
   resave: true,
   saveUninitialized: true,
   cookie: {},
@@ -116,6 +116,7 @@ app.route('/profile').get(ensureAuthenticated, (req, res) => {
 app.route('/register').post(
   (req, res, next) => {
     const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
+    console.log('Registration attempt:', req.body);
     client.connect(err => {
       if (err) return console.error(err);
       const db = client.db();
