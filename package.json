@@ -9,6 +9,7 @@
     "dev": "export $(cat .env | xargs) && nodemon server.js"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.5",
     "cors": "^2.8.1",
     "express": "^4.16.1",
     "express-session": "^1.17.1",

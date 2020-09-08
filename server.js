@@ -22,25 +22,29 @@ const sessOptions = {
   secret: process.env.SESSION_SECRET,
   name: process.env.NODE_ENV,
   resave: true,
-  saveUninitialized: true,
-  proxy: true,
-  cookie: {
-    httpOnly: false,
-    secure: !process.env.NODE_ENV === 'REPL'
-  }
+  saveUninitialized: true
 }
 
-app.set('trust proxy', 1) // trust first proxy
+app.use((req, res, next) => {
+  console.log(
+    'Request:\n - Path: %s\n - Host: %s\n - Agent: %s\n - Cookie: %s', 
+    req.path,
+    req.headers.host,
+    req.headers['user-agent']
+      .match(/Chrome|Firefox|Postman/g)[0],
+    req.headers.cookie);
+  next();
+});
 app.use(session(sessOptions));
 
 // User de/serialisation
 passport.serializeUser((user, done) => {
-  console.log('Serialised', user._id);
+  console.log('Serialised \x1b[33m%s\x1b[0m', user._id);
   done(null, user._id);
 });
 
 passport.deserializeUser((id, done) => {
-  console.log('Deserialised', id);
+  console.log('Deserialised \x1b[33m%s\x1b[0m', id);
   const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
   client.connect(err => {
     if (err) return console.error(err);
@@ -83,7 +87,7 @@ const ensureAuthenticated = (req, res, next) => {
     console.log('\x1b[33m%s\x1b[0m logged in, serving request', req.user._id);
     next();
   } else {
-    console.log('Not authorised for \x1b[33m%s\x1b[0m, redirecting', req.path);
+    console.log('Not authorised for \x1b[33m%s\x1b[0m, redirecting.', req.path);
     res.redirect('/');
   }
 }
@@ -111,7 +115,7 @@ app.route('/profile').get(ensureAuthenticated, (req, res) => {
 app.route('/register').post(
   (req, res, next) => {
     const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true });
-    console.log('Registration attempt:', req.body);
+    console.log('Registration attempt for user \x1b[33m%s\x1b[0m', req.body.username);
     client.connect(err => {
       if (err) return console.error(err);
       const db = client.db();
@@ -119,7 +123,10 @@ app.route('/register').post(
         { username: req.body.username },
         (err, user) => {
           if (err) { next(err) }
-          else if (user) { res.redirect('/profile'); }
+          else if (user) { 
+            console.log('User \x1b[33m%s\x1b[0m already exists', req.body.username);
+            res.redirect('/'); 
+            }
           else {
             db.collection('users').insertOne(
               { username: req.body.username, password: req.body.password },
@@ -135,7 +142,7 @@ app.route('/register').post(
   },
   passport.authenticate('local', { failureRedirect: '/' }),
   (req, res) => {
-    console.log('Registration successful for \x1b[33m%s\x1b[0m', req.user.username);
+    console.log('Registration complete for \x1b[33m%s\x1b[0m', req.user.username);
     res.redirect('/profile');
   }
 );
