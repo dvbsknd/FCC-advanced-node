@@ -1,14 +1,13 @@
 "use strict";
 
+const routes = require('./routes');
+const auth = require('./auth');
 const express = require("express");
 const mongo = require('mongodb').MongoClient;
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
 const session = require('express-session');
 const passport = require('passport');
-const LocalStrategy = require('passport-local');
-const { MongoClient, ObjectID } = require('mongodb');
-const bcrypt = require('bcrypt');
-const salt = bcrypt.genSaltSync(10);
+const { MongoClient } = require('mongodb');
 
 const app = express();
 
@@ -49,116 +48,8 @@ client.connect(err => {
   if (err) return console.error('Database connection error:', err);
   else {
     const db = client.db();
-
-    // User de/serialisation
-    passport.serializeUser((user, done) => {
-      console.log('Serialised \x1b[33m%s\x1b[0m', user._id);
-      done(null, user._id);
-    });
-
-    passport.deserializeUser((id, done) => {
-      console.log('Deserialised \x1b[33m%s\x1b[0m', id);
-      db.collection('users').findOne(
-        {_id: new ObjectID(id)},
-        (err, doc) => {
-          done(null, doc);
-        }
-      );
-    });
-
-    // Define auth strategy
-    passport.use(new LocalStrategy((username, password, done) => {
-      console.log('User \x1b[33m%s\x1b[0m attempted to log in', username);
-        db.collection('users').findOne(
-          { username: username },
-          (err, user) => {
-            if (err) return done(err);
-            if (!user) {
-              console.log('User \x1b[33m%s\x1b[0m not registered', username);
-              return done(null, false);
-            }
-            if (!bcrypt.compareSync(password, user.password)) {
-              console.log('Log-in failure for \x1b[33m%s\x1b[0m (password error)', username);
-              return done(null, false);
-            };
-            console.log('Log-in succeeded for \x1b[33m%s\x1b[0m', username);
-            return done(null, user);
-          });
-      }));
-
-      const ensureAuthenticated = (req, res, next) => {
-        if (req.isAuthenticated()) {
-          console.log('\x1b[33m%s\x1b[0m logged in, serving request', req.user._id);
-          next();
-        } else {
-          console.log('Not authorised for \x1b[33m%s\x1b[0m, redirecting.', req.path);
-          res.redirect('/');
-        }
-      }
-
-      app.route("/").get((req, res) => {
-        const data = {
-          title: 'Home Page',
-          message: 'Please login',
-          showLogin: true,
-          showRegistration: true
-        };
-        res.render('index', data);
-      });
-
-      app.route('/profile').get(ensureAuthenticated, (req, res) => {
-        const data = {
-          username: req.user.username
-        };
-        res.render('profile', data);
-      });
-
-    app.route('/register').post(
-      (req, res, next) => {
-        console.log('Registration attempt for user \x1b[33m%s\x1b[0m', req.body.username);
-        db.collection('users').findOne(
-          { username: req.body.username },
-          (err, user) => {
-            if (err) { next(err) }
-            else if (user) {
-              console.log('User \x1b[33m%s\x1b[0m already exists', req.body.username);
-              res.redirect('/');
-            }
-            else {
-              const password = bcrypt.hashSync(req.body.password, salt);
-              db.collection('users').insertOne(
-                { username: req.body.username, password },
-                (err, doc) => {
-                  console.log('Adding user \x1b[33m%s\x1b[0m', req.body.username);
-                  if (err) { res.redirect('/'); }
-                  else { next(null, user); }
-                }
-              );
-            };
-          });
-      },
-      passport.authenticate('local', { failureRedirect: '/' }),
-      (req, res) => {
-        console.log('Registration complete for \x1b[33m%s\x1b[0m', req.user.username);
-        res.redirect('/profile');
-      }
-    );
-
-    app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), (req, res) => {
-      res.redirect('/profile');
-    });
-
-    app.route('/logout').get((req, res) => {
-      req.logout();
-      res.redirect('/');
-    });
-
-    app.use((req, res, next) => {
-      res.status(404)
-        .type('text')
-        .send('Not Found');
-    });
-
+    routes(app, db);
+    auth(app, db);
     // Start listening
     app.listen(process.env.PORT || 3000, () => {
       console.log("Listening on port", process.env.PORT, 'with database', db.databaseName);
