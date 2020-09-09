@@ -7,6 +7,8 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const { MongoClient, ObjectID } = require('mongodb');
+const bcrypt = require('bcrypt');
+const salt = bcrypt.genSaltSync(10);
 
 const app = express();
 
@@ -37,7 +39,7 @@ app.use((req, res, next) => {
     req.headers.host,
     req.headers['user-agent']
       .match(/Chrome|Firefox|Postman/g)[0],
-    req.headers.cookie);
+    req.headers.cookie ? req.headers.cookie.slice(0, 30).concat('...') : 'Not set.');
   next();
 });
 
@@ -66,16 +68,20 @@ client.connect(err => {
 
     // Define auth strategy
     passport.use(new LocalStrategy((username, password, done) => {
-      console.log(`User ${username} attempted to log in.`);
+      console.log('User \x1b[33m%s\x1b[0m attempted to log in', username);
         db.collection('users').findOne(
           { username: username },
           (err, user) => {
             if (err) return done(err);
-            if (!user) return done(null, false);
-            if (password !== user.password) {
-              console.log('Log-in failure for \x1b[33m%s\x1b[0m', username);
+            if (!user) {
+              console.log('User \x1b[33m%s\x1b[0m not registered', username);
+              return done(null, false);
+            }
+            if (!bcrypt.compareSync(password, user.password)) {
+              console.log('Log-in failure for \x1b[33m%s\x1b[0m (password error)', username);
               return done(null, false);
             };
+            console.log('Log-in succeeded for \x1b[33m%s\x1b[0m', username);
             return done(null, user);
           });
       }));
@@ -119,8 +125,9 @@ client.connect(err => {
               res.redirect('/');
             }
             else {
+              const password = bcrypt.hashSync(req.body.password, salt);
               db.collection('users').insertOne(
-                { username: req.body.username, password: req.body.password },
+                { username: req.body.username, password },
                 (err, doc) => {
                   console.log('Adding user \x1b[33m%s\x1b[0m', req.body.username);
                   if (err) { res.redirect('/'); }
@@ -138,7 +145,6 @@ client.connect(err => {
     );
 
     app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), (req, res) => {
-      console.log('Auth successful for \x1b[33m%s\x1b[0m', req.user.username);
       res.redirect('/profile');
     });
 

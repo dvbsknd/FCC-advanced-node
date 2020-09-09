@@ -8,4 +8,5 @@ Notable packages and concepts include:
 
 1. [PassportJS](https://passportjs.org/)
 1. [PugJS](https://pugjs.org/api/getting-started.html)
+1. [bcrypt](https://github.com/kelektiv/node.bcrypt.js#readme)
 1. [Socket.io](https://socket.io/)
