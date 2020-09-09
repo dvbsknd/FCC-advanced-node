@@ -47,6 +47,7 @@ const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true
 client.connect(err => {
   if (err) return console.error('Database connection error:', err);
   else {
+    // mongo.connect is deprecated
     const db = client.db();
     routes(app, db);
     auth(app, db);
