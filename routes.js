@@ -9,7 +9,8 @@ module.exports = (app, db) => {
       title: 'Home Page',
       message: 'Please login',
       showLogin: true,
-      showRegistration: true
+      showRegistration: true,
+      showSocialAuth: true
     };
     res.render('index', data);
   });
@@ -44,6 +45,12 @@ module.exports = (app, db) => {
       res.redirect('/profile');
     }
   );
+
+  app.route('/auth/github').get(passport.authenticate('github'));
+  app.route('/auth/github/callback')
+    .get(passport.authenticate('local', { failureRedirect: '/' }), (req, res) => {
+      res.redirect('/profile');
+    });
 
   app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), (req, res) => {
     res.redirect('/profile');
