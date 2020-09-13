@@ -59,6 +59,15 @@ module.exports = function (app) {
       });
     });
   
+  app.route('/_api/routes.js')
+    .get(function(req, res, next) {
+      console.log('requested');
+      fs.readFile(process.cwd() + '/routes.js', function(err, data) {
+        if(err) return next(err);
+        res.send(data.toString());
+      });
+    });
+
   app.route('/_api/package.json')
     .get(function(req, res, next) {
       console.log('requested');
