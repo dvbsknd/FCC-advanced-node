@@ -4,6 +4,10 @@ Forked from the [supplied boilerplate repository](https://github.com/freeCodeCam
 
 > We will continue on the path of exploring [ExpressJS](http://expressjs.com/) functionality including working with middleware packages in our Express Application.
 
+## Services
+
+The project depends on a remotely-visible instance of the app to be served, and something like [REPL.it](https://repl.it/) does a good job of that. You'll also need a publicly accessible Mongo database (hosted somewhere like [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)) and for the social authenitication step you'll have to [register an OAuth Application](https://github.com/settings/developers) on your Github Account.
+
 ## Local Development
 
 You'll need an `.env` file with:
