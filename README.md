@@ -14,6 +14,9 @@ You'll need an `.env` file with:
 1. `SESSION_SECRET`
 
 The rest is pretty straightforward, with `npm` for package management and `nodemon` for development server. Use `npm run dev` for starting up the local server.
+
+## Dependencies
+
 Notable packages and concepts include:
 
 1. [PassportJS](https://passportjs.org/)
