@@ -50,6 +50,28 @@ module.exports = (app, db) => {
     },
     (accessToken, refreshToken, profile, callback) => {
       console.log('User \x1b[33m%s\x1b[0m authenticated by Github', profile.username);
+      // We need to load the user's database object if it exists,
+      // or create one if it doesn't, and populate the fields from
+      // the profile, then return the user's object.
+      db.collection('users').findOneAndUpdate(
+        { id: profile.id },
+        {
+          $setOnInsert: {
+            id: profile.id,
+            name: profile.displayName || null,
+            photo: profile.photos[0].value || '',
+            email: Array.isArray(profile.emails) ? profile.emails[0].value : 'No public email',
+            created_on: new Date(),
+            provider: profile.provider || ''
+          },
+          $set: { last_login: new Date() },
+          $inc: { login_count: 1 }
+        },
+        { upsert: true, returnOriginal: false },
+        (err, user) => {
+          return callback(null, user.value);
+        }
+      );
     }));
 
 }
