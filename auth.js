@@ -1,6 +1,6 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
-const GithubStrategy = require('passport-github');
+const GitHubStrategy = require('passport-GitHub').Strategy;
 const bcrypt = require('bcrypt');
 const { ObjectID } = require('mongodb');
 
@@ -22,7 +22,7 @@ module.exports = (app, db) => {
     );
   });
 
-  // Define auth strategy
+  // Define local auth strategy
   passport.use(new LocalStrategy((username, password, done) => {
     console.log('User \x1b[33m%s\x1b[0m attempted to log in', username);
     db.collection('users').findOne(
@@ -41,5 +41,15 @@ module.exports = (app, db) => {
         return done(null, user);
       });
   }));
+
+  // Define GitHub auth strategy
+  passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: 'http://localhost:3000/auth/github/callback'
+    },
+    (accessToken, refreshToken, profile, callback) => {
+      console.log('User \x1b[33m%s\x1b[0m authenticated by Github', profile.username);
+    }));
 
 }
