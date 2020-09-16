@@ -33,9 +33,9 @@ app.use(passport.session());
 // Simple request logging
 app.use((req, res, next) => {
   console.log(
-    'Request:\n - Path: %s\n - Host: %s\n - Agent: %s\n - Cookie: %s',
+    '%s: %s from %s with cookie: %s',
+    req.method,
     req.path,
-    req.headers.host,
     req.headers['user-agent']
       .match(/Chrome|Firefox|Postman/g)[0],
     req.headers.cookie ? req.headers.cookie.slice(0, 30).concat('...') : 'Not set.');
