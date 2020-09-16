@@ -49,7 +49,8 @@ module.exports = (app, db) => {
   app.route('/auth/github').get(passport.authenticate('github'));
   app.route('/auth/github/callback')
     .get(passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
-      res.redirect('/profile');
+      req.session.user_id = req.user.id;
+      res.redirect('/chat');
     });
 
   app.post('/login', passport.authenticate('local', { failureRedirect: '/' }), (req, res) => {
@@ -78,11 +79,17 @@ module.exports = (app, db) => {
     res.redirect('/');
   });
 
+  app.route('/chat').get(ensureAuthenticated, (req, res) => {
+    const data = {
+      user: req.user
+    };
+    res.render('chat', data);
+  });
+
   app.use((req, res, next) => {
     res.status(404)
       .type('text')
       .send('Not Found');
   });
-
 
 }

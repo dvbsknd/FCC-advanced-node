@@ -1,15 +1,17 @@
 "use strict";
 
+const express = require("express");
 const routes = require('./routes');
 const auth = require('./auth');
-const express = require("express");
 const mongo = require('mongodb').MongoClient;
-const fccTesting = require("./freeCodeCamp/fcctesting.js");
+const { MongoClient } = require('mongodb');
 const session = require('express-session');
 const passport = require('passport');
-const { MongoClient } = require('mongodb');
+const fccTesting = require("./freeCodeCamp/fcctesting.js");
 
 const app = express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
 fccTesting(app); //For FCC testing purposes
 app.use("/public", express.static(process.cwd() + "/public"));
@@ -52,7 +54,10 @@ client.connect(err => {
     routes(app, db);
     auth(app, db);
     // Start listening
-    app.listen(process.env.PORT || 3000, () => {
+    io.on('connection', socket => {
+      console.log('A user has connected');
+    });
+    http.listen(process.env.PORT || 3000, () => {
       console.log("Listening on port", process.env.PORT, 'with database', db.databaseName);
     });
   }
