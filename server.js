@@ -54,8 +54,11 @@ client.connect(err => {
     routes(app, db);
     auth(app, db);
     // Start listening
+    let currentUsers = 0;
     io.on('connection', socket => {
-      console.log('A user has connected');
+      ++currentUsers;
+      console.log('%s users have connected', currentUsers);
+      io.emit('user count', currentUsers);
     });
     http.listen(process.env.PORT || 3000, () => {
       console.log("Listening on port", process.env.PORT, 'with database', db.databaseName);
