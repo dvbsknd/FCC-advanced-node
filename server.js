@@ -40,7 +40,6 @@ app.use((req, res, next) => {
     req.path,
     req.headers['user-agent']
       .match(/Chrome|Firefox|Postman/g)[0],
-    //req.headers.cookie ? req.headers.cookie.slice(0, 30).concat('...') : 'Not set.');
     req.headers.cookie ? req.headers.cookie.match(/FCC-advanced-node.+\s?/)[0].slice(0, 40).concat('...') : 'Not set.');
   next();
 });
@@ -63,6 +62,7 @@ client.connect(err => {
       socket.on('disconnect', () => {
         --currentUsers;
         console.log('A user disconnected, %s remain', currentUsers);
+        io.emit('user count', currentUsers);
       });
     });
     http.listen(process.env.PORT || 3000, () => {
