@@ -9,8 +9,11 @@ const session = require('express-session');
 const SessionStore = require('connect-mongo')(session);
 const sessionStore = new SessionStore({ url: process.env.MONGO_URI });
 const passport = require('passport');
+const passportSocketIo = require('passport.socketio');
+const cookieParser = require('cookie-parser');
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
 
+// Set up socket.io
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
@@ -35,6 +38,29 @@ app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Handle success/failure for socket auth
+const onAuthorizeSuccess = (data, accept) => {
+  console.log('Socket connection succeeded');
+  accept(null, true);
+}
+const onAuthorizeFail = (data, message, error, accept) => {
+  if (error) throw new Error(message);
+  console.log('Socket connection failed');
+  accept(null, false);
+}
+
+// Get the user from the cookie for socket connection
+io.use(
+  passportSocketIo.authorize({
+    cookieParser,
+    key: sessOptions.name,
+    secret: sessOptions.secret,
+    store: sessionStore,
+    success: onAuthorizeSuccess,
+    fail: onAuthorizeFail
+  })
+);
+
 // Simple request logging
 app.use((req, res, next) => {
   console.log(
@@ -56,13 +82,17 @@ const client = new MongoClient(process.env.MONGO_URI, { useUnifiedTopology: true
 client.connect(err => {
   if (err) return console.error('Database connection error:', err);
   else {
-    // mongo.connect is deprecated
+
+    // Get the database and apply routes and auth to the app
+    // For FCC: mongo.connect is deprecated
     const db = client.db();
     routes(app, db);
     auth(app, db);
-    // Start listening
+
+    // Start listening for socket connections
     let currentUsers = 0;
     io.on('connection', socket => {
+      console.log('\x1b[33m%s\x1b[0m connected via socket', socket.request.user.name);
       ++currentUsers;
       console.log('%s users have connected', currentUsers);
       io.emit('user count', currentUsers);
@@ -72,8 +102,11 @@ client.connect(err => {
         io.emit('user count', currentUsers);
       });
     });
+
+    // Start listening for HTTP connections
     http.listen(process.env.PORT || 3000, () => {
       console.log("Listening on port", process.env.PORT, 'with database', db.databaseName);
     });
+
   }
 });
