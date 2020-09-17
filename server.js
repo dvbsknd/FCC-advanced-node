@@ -23,7 +23,7 @@ app.set('view engine', 'pug'); // Import/require not required
 // Sessions
 const sessOptions = {
   secret: process.env.SESSION_SECRET,
-  name: process.env.NODE_ENV,
+  name: 'FCC-advanced-node-' + process.env.NODE_ENV,
   resave: true,
   saveUninitialized: true
 }
@@ -40,7 +40,8 @@ app.use((req, res, next) => {
     req.path,
     req.headers['user-agent']
       .match(/Chrome|Firefox|Postman/g)[0],
-    req.headers.cookie ? req.headers.cookie.slice(0, 30).concat('...') : 'Not set.');
+    //req.headers.cookie ? req.headers.cookie.slice(0, 30).concat('...') : 'Not set.');
+    req.headers.cookie ? req.headers.cookie.match(/FCC-advanced-node.+\s?/)[0].slice(0, 40).concat('...') : 'Not set.');
   next();
 });
 
