@@ -59,6 +59,10 @@ client.connect(err => {
       ++currentUsers;
       console.log('%s users have connected', currentUsers);
       io.emit('user count', currentUsers);
+      socket.on('disconnect', () => {
+        --currentUsers;
+        console.log('A user disconnected, %s remain', currentUsers);
+      });
     });
     http.listen(process.env.PORT || 3000, () => {
       console.log("Listening on port", process.env.PORT, 'with database', db.databaseName);
