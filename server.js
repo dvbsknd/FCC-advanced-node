@@ -40,7 +40,11 @@ app.use((req, res, next) => {
     req.path,
     req.headers['user-agent']
       .match(/Chrome|Firefox|Postman/g)[0],
-    req.headers.cookie ? req.headers.cookie.match(/FCC-advanced-node.+\s?/)[0].slice(0, 40).concat('...') : 'Not set.');
+    req.headers.cookie
+      ? req.headers.cookie.match(/FCC-advanced-node.+\s?/)
+        ? req.headers.cookie.match(/FCC-advanced-node.+\s?/)[0].slice(0, 40).concat('...')
+        : 'Not set.'
+      : 'Not set.' );
   next();
 });
 
