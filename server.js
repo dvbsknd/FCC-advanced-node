@@ -6,6 +6,8 @@ const auth = require('./auth');
 const mongo = require('mongodb').MongoClient;
 const { MongoClient } = require('mongodb');
 const session = require('express-session');
+const SessionStore = require('connect-mongo')(session);
+const sessionStore = new SessionStore({ url: process.env.MONGO_URI });
 const passport = require('passport');
 const fccTesting = require("./freeCodeCamp/fcctesting.js");
 
@@ -22,6 +24,7 @@ app.set('view engine', 'pug'); // Import/require not required
 
 // Sessions
 const sessOptions = {
+  store: sessionStore,
   secret: process.env.SESSION_SECRET,
   name: 'FCC-advanced-node-' + process.env.NODE_ENV,
   resave: true,
