@@ -17,8 +17,8 @@ $(document).ready(function () {
 
   // Handle incoming messages
   socket.on('chat message', message => {
-    const { content, user } = message;
-    $('#messages').append($('<li>').html(user + ': ' + content));
+    const { content, name } = message;
+    $('#messages').append($('<li>').html(name + ': ' + content));
   });
 
   // Submit the form with contents of element '#m'

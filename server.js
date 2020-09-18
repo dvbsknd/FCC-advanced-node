@@ -113,7 +113,7 @@ client.connect(err => {
       });
 
       // Handle incoming chats
-      socket.on('chat message', message => io.emit('chat message', { content: message, user: socket.request.user.name }));
+      socket.on('chat message', message => io.emit('chat message', { name: socket.request.user.name, content: message }));
 
     });
 
