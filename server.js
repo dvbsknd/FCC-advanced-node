@@ -100,6 +100,8 @@ client.connect(err => {
         currentUsers,
         connected: true
       });
+
+      // Handle disconnections
       socket.on('disconnect', () => {
         --currentUsers;
         console.log('A user disconnected, %s remain', currentUsers);
@@ -109,6 +111,10 @@ client.connect(err => {
           connected: false
         });
       });
+
+      // Handle incoming chats
+      socket.on('chat message', message => io.emit('chat message', { content: message, user: socket.request.user.name }));
+
     });
 
     // Start listening for HTTP connections
