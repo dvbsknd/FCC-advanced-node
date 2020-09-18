@@ -95,11 +95,19 @@ client.connect(err => {
       console.log('\x1b[33m%s\x1b[0m connected via socket', socket.request.user.name);
       ++currentUsers;
       console.log('%s users have connected', currentUsers);
-      io.emit('user count', currentUsers);
+      io.emit('user', {
+        name: socket.request.user.name,
+        currentUsers,
+        connected: true
+      });
       socket.on('disconnect', () => {
         --currentUsers;
         console.log('A user disconnected, %s remain', currentUsers);
-        io.emit('user count', currentUsers);
+        io.emit('user', {
+          name: socket.request.user.name,
+          currentUsers,
+          connected: false
+        });
       });
     });
 

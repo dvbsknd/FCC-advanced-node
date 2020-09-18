@@ -6,8 +6,11 @@ $(document).ready(function () {
   // which will also need to be available on the page
   /*global io*/
   let socket = io();
-  socket.on('user count', function(data) {
-    console.log(data);
+  socket.on('user', function(data) {
+    const { name, connected, currentUsers: users } = data;
+    $('#num-users').text(`${users} users online`);
+    const message = `${name} has ${connected ? 'joined' : 'left'} the chat`;
+    $('#messages').append($('<li>').html('<b>' + message + '</b>'));
   });
 
   // Submit the form with contents of element '#m'
