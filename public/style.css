@@ -10,6 +10,19 @@
   margin-right: auto;
 }
 
+#nav {
+  margin: 10 auto;
+  display: flex;
+  justify-content: center;
+}
+
+#nav li {
+  list-style: none;
+  padding: 3px 6px;
+  margin: 0px 3px;
+  border: 1px solid grey;
+}
+
 div > input {
   margin: 0.5rem;
 }

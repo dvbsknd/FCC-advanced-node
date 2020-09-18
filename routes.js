@@ -68,10 +68,7 @@ module.exports = (app, db) => {
   }
 
   app.route('/profile').get(ensureAuthenticated, (req, res) => {
-    const data = {
-      username: req.user.username
-    };
-    res.render('profile', data);
+    res.render('profile', { name: req.user.name } );
   });
 
   app.route('/logout').get((req, res) => {

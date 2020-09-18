@@ -8,5 +8,6 @@ html
     link(rel='stylesheet', href='/public/style.css')
   body
     h1.border.center Profile Home
-    h2.center#welcome Welcome, #{username}!
+    h2.center#welcome Welcome, #{name}!
+    include nav.pug
     p: a(href='/logout') Logout
